@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>
+		
+	</title>
+</head>
+<body>
+
+
+	<script type="text/javascript" src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+
+	<script type="text/javascript" src="https://www.google.com/jsapi"></script><script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyDQ55pCx2ZMMa_pQVRZHRGOIL9df7isZmc"></script>
+
+<div id="map_canvas" style="height: 400px; width: 400px"></div>
+
+
+<script type="text/javascript">
+	google.load( 'visualization', '1', { packages:['corechart'] });
+
+	function ChartMarker( options ) {
+	    this.setValues( options );
+	    
+	    this.$inner = $('<div>').css({
+	        position: 'relative',
+	        left: '-50%', top: '-50%',
+	        width: options.width,
+	        height: options.height,
+	        fontSize: '1px',
+	        lineHeight: '1px',
+	        border: '1px solid #888',
+	        padding: '2px',
+	        backgroundColor: 'white',
+	        cursor: 'default'
+	    });
+
+	    this.$div = $('<div>')
+	        .append( this.$inner )
+	        .css({
+	            position: 'absolute',
+	            display: 'none'
+	        });
+	};
+
+	ChartMarker.prototype = new google.maps.OverlayView;
+
+	ChartMarker.prototype.onAdd = function() {
+	    $( this.getPanes().overlayMouseTarget ).append( this.$div );
+	};
+
+	ChartMarker.prototype.onRemove = function() {
+	    this.$div.remove();
+	};
+
+	ChartMarker.prototype.draw = function() {
+	    var marker = this;
+	    var projection = this.getProjection();
+	    var position = projection.fromLatLngToDivPixel( this.get('position') );
+
+	    this.$div.css({
+	        left: position.x,
+	        top: position.y,
+	        display: 'block'
+	    })
+
+	    this.$inner
+	        .html( '<img src="' + this.get('image') + '"/>' )
+	        .click( function( event ) {
+	            var events = marker.get('events');
+	            events && events.click( event );
+	        });
+	        
+	    this.chart = new google.visualization.PieChart( this.$inner[0] );
+	    this.chart.draw( this.get('chartData'), this.get('chartOptions') );
+	};
+
+	function initialize() {
+	    var latLng = new google.maps.LatLng( 40.708762, -74.006731 );
+
+	    var map = new google.maps.Map( $('#map_canvas')[0], {
+	        zoom: 15,
+	        center: latLng,
+	        mapTypeId: google.maps.MapTypeId.ROADMAP
+	    });
+	    
+	    var data = google.visualization.arrayToDataTable([
+	        [ 'Task', 'Hours per Day' ],
+	        [ 'Work', 11 ],
+	        [ 'Eat', 2 ],
+	        [ 'Commute', 2 ],
+	        [ 'Watch TV', 2 ],
+	        [ 'Sleep', 7 ]
+	    ]);
+	    
+	    var options = {
+	        title: 'My Daily Activities',
+	        fontSize: 8
+	    };
+	    
+	    var marker = new ChartMarker({
+	        map: map,
+	        position: latLng,
+	        width: '250px',
+	        height: '100px',
+	        chartData: data,
+	        chartOptions: options,
+	        events: {
+	            click: function( event ) {
+	                alert( 'Clicked marker' );
+	            }
+	        }
+	    });
+	};
+
+
+	$(function () {
+	   initialize()
+
+	});
+
+</script>
+
+</body>
+</html>
